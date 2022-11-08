@@ -13,13 +13,14 @@ usage()
     [ -h | --help ]           show usage
     [ -c | --cmake_options ]  space-delimited string containing CMake options to forward to the module (e.g. \"-DBUILD_TESTING=OFF\")
     [ -x | --exclude_libs ]   semicolon-delimited library names to exclude when repairing wheel (e.g. \"libcuda.so\")
+    [ -a | --arch ]           target architecture for build (e.g. \"arch64\"), defaults to \"x86\"
     [ python_version ]        build wheel for a specific python version. (e.g. cp39)"
   exit 2
 }
 
 FORWARD_ARGS=("$@") # Store arguments to forward them later
 PARSED_ARGS=$(getopt -a -n dockcross-manylinux-download-cache-and-build-module-wheels \
-  -o hc:x: --long help,cmake_options:,exclude_libs: -- "$@")
+  -o hc:x:a: --long help,cmake_options:,exclude_libs:,arch: -- "$@")
 eval set -- "$PARSED_ARGS"
 
 while :
@@ -28,11 +29,13 @@ do
     -h | --help) usage; break ;;
     -c | --cmake_options) CMAKE_OPTIONS="$2" ; shift 2 ;;
     -x | --exclude_libs) EXCLUDE_LIBS="$2" ; shift 2 ;;
+    -a | --arch) TARGET_ARCH="$2" ; shift 2 ;;
     --) shift; break ;;
     *) echo "Unexpected option: $1.";
        usage; break ;;
   esac
 done
+
 # -----------------------------------------------------------------------
 
 # Packages distributed by github are in zstd format, so we need to download that binary to uncompress
