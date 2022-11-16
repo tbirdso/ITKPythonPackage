@@ -33,29 +33,38 @@ do
        usage; break ;;
   esac
 done
+
+echo "Building for ${TARBALL_SPECIALIZATION} specialization"
+echo "Building for ITK version ${ITK_PACKAGE_VERSION}"
 # -----------------------------------------------------------------------
 
-# Packages distributed by github are in zstd format, so we need to download that binary to uncompress
-if [[ ! -f zstd-1.2.0-linux.tar.gz ]]; then
+# Packages distributed by github are in zstd format.
+# Unzstd may be installed via `sudo apt install zstd`.
+# The x86_64 unzstd 1.2.0 binary is also available for download.
+unzstd_exe=`(which unzstd)`
+
+if [[ -z ${unzstd_exe} && ! -f zstd-1.2.0-linux.tar.gz ]]; then
   curl https://data.kitware.com/api/v1/file/592dd8068d777f16d01e1a92/download -o zstd-1.2.0-linux.tar.gz
   gunzip -d zstd-1.2.0-linux.tar.gz
   tar xf zstd-1.2.0-linux.tar
-fi
-if [[ ! -f ./zstd-1.2.0-linux/bin/unzstd ]]; then
-  echo "ERROR: can not find required binary './zstd-1.2.0-linux/bin/unzstd'"
-  exit 255
+
+  if [[ ! -f ./zstd-1.2.0-linux/bin/unzstd ]]; then
+    echo "ERROR: can not find required binary './zstd-1.2.0-linux/bin/unzstd'"
+    exit 255
+  fi
+  unzstd_exe="./zstd-1.2.0-linux/bin/unzstd"
 fi
 
 TARBALL_NAME="ITKPythonBuilds-linux${TARBALL_SPECIALIZATION}.tar"
 
 if [[ ! -f ${TARBALL_NAME}.zst ]]; then
-  curl -L https://github.com/InsightSoftwareConsortium/ITKPythonBuilds/releases/download/${ITK_PACKAGE_VERSION:=v5.2.0.post1}/${TARBALL_NAME}.zst -O
+  curl -L https://github.com/InsightSoftwareConsortium/ITKPythonBuilds/releases/download/${ITK_PACKAGE_VERSION:=v5.3rc04.post4}/${TARBALL_NAME}.zst -O
 fi
 if [[ ! -f ./${TARBALL_NAME}.zst ]]; then
   echo "ERROR: can not find required binary './${TARBALL_NAME}.zst'"
   exit 255
 fi
-./zstd-1.2.0-linux/bin/unzstd ./${TARBALL_NAME}.zst -o ${TARBALL_NAME}
+${unzstd_exe} ./${TARBALL_NAME}.zst -o ${TARBALL_NAME}
 if [ "$#" -lt 1 ]; then
   echo "Extracting all files";
   tar xf ${TARBALL_NAME}
