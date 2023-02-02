@@ -68,7 +68,7 @@ if [[ -n ${LD_LIBRARY_PATH} ]]; then
   done
 fi
 
-if [[ "${TARGET_ARCH}" = "aarch64" ]]; then
+if [[ "${MANYLINUX_VERSION}" == "_2_28" && "${TARGET_ARCH}" = "aarch64" ]]; then
   echo "Install aarch64 architecture emulation tools to perform build for ARM platform"
 
   if [[ ! ${NO_SUDO} ]]; then
@@ -82,11 +82,11 @@ if [[ "${TARGET_ARCH}" = "aarch64" ]]; then
   ${docker_prefix} docker run $DOCKER_ARGS ${CONTAINER_SOURCE} "/ITKPythonPackage/scripts/internal/manylinux-aarch64-build-module-wheels.sh" "$@"
 else
   # Generate dockcross scripts
-  docker run --rm ${CONTAINER_SOURCE} > /tmp/dockcross-manylinux-x64
-  chmod u+x /tmp/dockcross-manylinux-x64
+  docker run --rm ${CONTAINER_SOURCE} > /tmp/dockcross-manylinux-${TARGET_ARCH}
+  chmod u+x /tmp/dockcross-manylinux-${TARGET_ARCH}
 
   # Build wheels
-  /tmp/dockcross-manylinux-x64 \
+  /tmp/dockcross-manylinux-${TARGET_ARCH} \
     -a "$DOCKER_ARGS" \
     "/ITKPythonPackage/scripts/internal/manylinux-build-module-wheels.sh" "$@"
 fi
