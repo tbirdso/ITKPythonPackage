@@ -18,29 +18,44 @@
 #   scripts/dockcross-manylinux-build-module-wheels.sh cp39
 #
 
-MANYLINUX_VERSION=${MANYLINUX_VERSION:=_2_28}
-
-if [[ ${MANYLINUX_VERSION} == _2_28 ]]; then
-  IMAGE_TAG=${IMAGE_TAG:=20230106-1aeaea0}
-elif [[ ${MANYLINUX_VERSION} == 2014 ]]; then
-  IMAGE_TAG=${IMAGE_TAG:=20230106-1aeaea0}
-else
-  echo "Unknown manylinux version ${MANYLINUX_VERSION}"
-  exit 1;
-fi
-
-# Generate dockcross scripts
-docker run --rm dockcross/manylinux${MANYLINUX_VERSION}-x64:${IMAGE_TAG} > /tmp/dockcross-manylinux-x64
-chmod u+x /tmp/dockcross-manylinux-x64
-
+# Handle case where the script directory is not the working directory
 script_dir=$(cd $(dirname $0) || exit 1; pwd)
-
-# Build wheels
 pushd $script_dir/..
+
+source "${script_dir}/dockcross-manylinux-set-vars.sh"
+
+# Set up paths and variables for build
 mkdir -p dist
 DOCKER_ARGS="-v $(pwd)/dist:/work/dist/"
 DOCKER_ARGS+=" -e MANYLINUX_VERSION"
-/tmp/dockcross-manylinux-x64 \
-  -a "$DOCKER_ARGS" \
-  ./scripts/internal/manylinux-build-wheels.sh "$@"
-popd
+# Mount any shared libraries
+if [[ -n ${LD_LIBRARY_PATH} ]]; then
+  for libpath in ${LD_LIBRARY_PATH//:/ }; do
+	  DOCKER_ARGS+=" -v ${libpath}:/usr/lib64/$(basename -- ${libpath})"
+  done
+fi
+
+if [[ "${MANYLINUX_VERSION}" == "_2_28" && "${TARGET_ARCH}" = "aarch64" ]]; then
+  echo "Install aarch64 architecture emulation tools to perform build for ARM platform"
+
+  if [[ ! ${NO_SUDO} ]]; then
+    docker_prefix="sudo"
+  fi
+
+  ${docker_prefix} docker run --privileged --rm tonistiigi/binfmt --install all
+
+  # Build wheels
+  DOCKER_ARGS+=" -v $(pwd):/work/ --rm"
+  ${docker_prefix} docker run $DOCKER_ARGS ${CONTAINER_SOURCE} "/ITKPythonPackage/scripts/internal/manylinux-aarch64-build-wheels.sh" "$@"
+else
+  # Generate dockcross scripts
+  docker run --rm ${CONTAINER_SOURCE} > /tmp/dockcross-manylinux-${TARGET_ARCH}
+  chmod u+x /tmp/dockcross-manylinux-${TARGET_ARCH}
+
+  # Build wheels
+  /tmp/dockcross-manylinux-${TARGET_ARCH} \
+    -a "$DOCKER_ARGS" \
+    "/ITKPythonPackage/scripts/internal/manylinux-build-wheels.sh" "$@"
+fi
+
+popd # script_dir
