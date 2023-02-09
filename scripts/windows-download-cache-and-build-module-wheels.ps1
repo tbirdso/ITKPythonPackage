@@ -41,8 +41,7 @@
 echo "Powershell Version:"
 echo $PSVersionTable.PSVersion
 
-$AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
-[System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
