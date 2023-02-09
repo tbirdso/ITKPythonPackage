@@ -38,6 +38,9 @@
 #
 ########################################################################
 
+$AllProtocols = [System.Net.SecurityProtocolType]'Ssl3,Tls,Tls11,Tls12'
+[System.Net.ServicePointManager]::SecurityProtocol = $AllProtocols
+
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
 echo "Pulling Python $pythonVersion-x$pythonArch"
