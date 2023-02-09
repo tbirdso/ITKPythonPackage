@@ -42,10 +42,26 @@ echo "Powershell Version:"
 echo $PSVersionTable.PSVersion
 
 echo "Security protocol init"
-echo [System.Net.ServicePointManager]::SecurityProtocol
+$settingsOrig = [System.Net.ServicePointManager]::SecurityProtocol
+echo $settingsOrig
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 echo "Security protocol TLS12"
-echo [System.Net.ServicePointManager]::SecurityProtocol
+$settingsNew = [System.Net.ServicePointManager]::SecurityProtocol
+echo $settingsNew
+
+try {
+echo "Security protocol from install-utils.ps1"  
+[System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+$settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
+echo $settingsUtils
+} catch {
+  echo "Error occurred ins etting security protocol"
+  echo $_
+}
+echo "Security protocol from install-utils.ps1 outside try-catch"  
+[System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+$settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
+echo $settingsUtils
 
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
