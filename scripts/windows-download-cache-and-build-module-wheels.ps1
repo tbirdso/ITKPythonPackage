@@ -48,20 +48,28 @@ echo $settingsOrig
 echo "Security protocol TLS12"
 $settingsNew = [System.Net.ServicePointManager]::SecurityProtocol
 echo $settingsNew
+echo [System.Net.SecurityProtocolType]::Tls12
 
 try {
 echo "Security protocol from install-utils.ps1"  
-[System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls -bor [System.Net.SecurityProtocolType]::Ssl3
 $settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
 echo $settingsUtils
 } catch {
   echo "Error occurred ins etting security protocol"
   echo $_
 }
-echo "Security protocol from install-utils.ps1 outside try-catch"  
-[System.Net.ServicePointManager]::SecurityProtocol = 3072 -bor 768 -bor 192 -bor 48
+
+try {
+echo "Security protocol from install-utils.ps1 w/o ssl3"  
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls
 $settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
 echo $settingsUtils
+} catch {
+  echo "Error occurred in setting security protocol 2"
+  echo $_
+}
+
 
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
