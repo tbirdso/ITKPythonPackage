@@ -38,43 +38,10 @@
 #
 ########################################################################
 
-echo "Powershell Version:"
-echo $PSVersionTable.PSVersion
-
-echo "Security protocol init"
-$settingsOrig = [System.Net.ServicePointManager]::SecurityProtocol
-echo $settingsOrig
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
-echo "Security protocol TLS12"
-$settingsNew = [System.Net.ServicePointManager]::SecurityProtocol
-echo $settingsNew
-echo [System.Net.SecurityProtocolType]::Tls12
-
-try {
-echo "Security protocol from install-utils.ps1"  
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls -bor [System.Net.SecurityProtocolType]::Ssl3
-$settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
-echo $settingsUtils
-} catch {
-  echo "Error occurred ins etting security protocol"
-  echo $_
-}
-
-try {
-echo "Security protocol from install-utils.ps1 w/o ssl3"  
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12 -bor [System.Net.SecurityProtocolType]::Tls11 -bor [System.Net.SecurityProtocolType]::Tls
-$settingsUtils = [System.Net.ServicePointManager]::SecurityProtocol
-echo $settingsUtils
-} catch {
-  echo "Error occurred in setting security protocol 2"
-  echo $_
-}
-
-
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
 echo "Pulling Python $pythonVersion-x$pythonArch"
-iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/scikit-build/scikit-ci-addons/master/windows/install-python.ps1'))
+iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/tbirdso/scikit-ci-addons/install-utils-deprecate-ssl/windows/install-python.ps1'))
 
 if (-not $env:ITK_PACKAGE_VERSION) { $env:ITK_PACKAGE_VERSION = 'v5.3.0' }
 echo "Fetching build archive $env:ITK_PACKAGE_VERSION"
