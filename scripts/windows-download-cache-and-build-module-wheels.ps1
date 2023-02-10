@@ -41,7 +41,7 @@
 $pythonArch = "64"
 $pythonVersion = "3.$($args[0])"
 echo "Pulling Python $pythonVersion-x$pythonArch"
-iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/tbirdso/scikit-ci-addons/set-tls-protocol/windows/install-python.ps1'))
+iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/tbirdso/scikit-ci-addons/test-tls-failures/windows/install-python.ps1'))
 
 if (-not $env:ITK_PACKAGE_VERSION) { $env:ITK_PACKAGE_VERSION = 'v5.3.0' }
 echo "Fetching build archive $env:ITK_PACKAGE_VERSION"
